@@ -63,14 +63,14 @@ public class StatsRepositoryTest {
     }
 
     @Test
-    void getByDistinctIpAndTimestampAfterAndTimestampBeforeAndUriInTrue(){
+    void getByDistinctIpAndTimestampAfterAndTimestampBeforeAndUriInTrue() {
         List<Stats> statsNew = statsRepository.getByDistinctIpAndTimestampAfterAndTimestampBeforeAndUriIn(statsReq.getTimestamp().minusMinutes(2),
                 statsReq2.getTimestamp().plusMinutes(2), List.of("/events"));
         Assertions.assertEquals(statsNew, List.of(statsResp));
     }
 
     @Test
-    void getByTimestampAfterAndTimestampBeforeAndUriInTrue(){
+    void getByTimestampAfterAndTimestampBeforeAndUriInTrue() {
         List<Stats> statsNew = statsRepository.getByTimestampAfterAndTimestampBeforeAndUriIn(statsReq.getTimestamp().minusMinutes(2),
                 statsReq.getTimestamp().plusMinutes(3), List.of("/events"));
 
@@ -78,7 +78,7 @@ public class StatsRepositoryTest {
     }
 
     @Test
-    void getByDistinctIpAndTimestampAfterAndTimestampBeforeTrue(){
+    void getByDistinctIpAndTimestampAfterAndTimestampBeforeTrue() {
        List<Stats> statsNew = statsRepository.getByDistinctIpAndTimestampAfterAndTimestampBefore(statsReq.getTimestamp().minusMinutes(2),
                statsReq.getTimestamp().plusMinutes(3));
 
@@ -86,7 +86,7 @@ public class StatsRepositoryTest {
     }
 
     @Test
-    void getByTimestampAfterAndTimestampBeforeTrue(){
+    void getByTimestampAfterAndTimestampBeforeTrue() {
         List<Stats> statsNew = statsRepository.getByTimestampAfterAndTimestampBefore(statsReq.getTimestamp().minusMinutes(2),
                 statsReq.getTimestamp().plusMinutes(3));
 
