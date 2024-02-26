@@ -1,10 +1,10 @@
 package ru.practicum;
 
-import lombok.extern.slf4j.Slf4j;
+import lombok.experimental.UtilityClass;
 
-@Slf4j
+@UtilityClass
 public class StatsMapping {
-    public static Stats toStats(RequestStatsDto requestStatsDto) {
+    public Stats toStats(RequestStatsDto requestStatsDto) {
         return Stats.builder()
                 .app(requestStatsDto.getApp())
                 .uri(requestStatsDto.getUri())
@@ -13,7 +13,7 @@ public class StatsMapping {
                 .build();
     }
 
-    public static ResponseStatsDto toResponseStatsDto(Stats stats) {
+    public ResponseStatsDto toResponseStatsDto(Stats stats) {
         return ResponseStatsDto.builder()
                 .app(stats.getApp())
                 .uri(stats.getUri())
@@ -21,7 +21,7 @@ public class StatsMapping {
                 .build();
     }
 
-    public static RequestStatsDto toRequestStatsDto(Stats stats) {
+    public RequestStatsDto toRequestStatsDto(Stats stats) {
         return RequestStatsDto.builder()
                 .app(stats.getApp())
                 .uri(stats.getUri())
