@@ -1,3 +1,5 @@
+package ru.practicum;
+
 import org.springframework.http.*;
 import org.springframework.lang.Nullable;
 import org.springframework.web.client.HttpStatusCodeException;
