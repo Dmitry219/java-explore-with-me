@@ -49,7 +49,7 @@ public class CategoryServiceImpl implements CategoryService {
         if (category.getName() == null) {
             category.setName(categoryRepository.findById(catId).get().getName());
         } else {
-            if (categoryRepository.findById(catId).get().equals(categoryDto.getName())) {
+            if (categoryRepository.findById(catId).get().getName().equals(categoryDto.getName())) {
                 return CategoryMapper.toCategoryDto(category);
             }
         }
