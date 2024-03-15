@@ -3,7 +3,6 @@ package ru.practicum.main.evente;
 import lombok.experimental.UtilityClass;
 import ru.practicum.main.category.CategoryMapper;
 import ru.practicum.main.evente.dto.EventDtoRequest;
-import ru.practicum.main.evente.dto.EventDtoRequestUpdateStateAction;
 import ru.practicum.main.evente.dto.EventDtoResponse;
 import ru.practicum.main.evente.dto.EventShortDto;
 import ru.practicum.main.users.UserMapper;
