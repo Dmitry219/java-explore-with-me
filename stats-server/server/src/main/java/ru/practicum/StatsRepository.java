@@ -9,11 +9,11 @@ import java.util.List;
 
 @Repository
 public interface StatsRepository extends JpaRepository<Stats,Long> {
-    @Query(value = "SELECT new ru.practicum.Stats(app, uri, COUNT(DISTINCT ip))" +
-            "FROM Stats " +
-            "WHERE timestamp BETWEEN :start AND :end " +
-            "AND uri IN :uris " +
-            "GROUP BY app, uri " +
+    @Query(value = "SELECT new ru.practicum.Stats(s.app, s.uri, COUNT(DISTINCT s.ip))" +
+            "FROM Stats s " +
+            "WHERE s.timestamp BETWEEN :start AND :end " +
+            "AND s.uri IN (:uris) " +
+            "GROUP BY s.app, s.uri " +
             "ORDER BY 3 DESC")
     List<Stats> getByDistinctIpAndTimestampAfterAndTimestampBeforeAndUriIn(LocalDateTime start, LocalDateTime end, List<String> uris);
 

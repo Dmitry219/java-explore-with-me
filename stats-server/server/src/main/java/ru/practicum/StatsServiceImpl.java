@@ -29,6 +29,11 @@ public class StatsServiceImpl implements StatsService {
 
     @Override
     public List<ResponseStatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
+        log.info("Проверка сервис метода getRequestInformation " +
+                "start {}" +
+                "end {}" +
+                "uris {}" +
+                "unique {}",start, end, uris, unique);
         checkTimeEndAndStart(start, end);
         List<Stats> statsList = new ArrayList<>();
         if (unique && uris != null) { // true уникалыне ip
