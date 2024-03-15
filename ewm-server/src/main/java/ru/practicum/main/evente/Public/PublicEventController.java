@@ -1,16 +1,10 @@
 package ru.practicum.main.evente.Public;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.RequestStatsDto;
-import ru.practicum.ResponseStatsDto;
-import ru.practicum.StatsClient;
 import ru.practicum.main.QueryEvent.PublicEventFilterRequest;
 import ru.practicum.main.evente.EventService;
 import ru.practicum.main.evente.dto.EventDtoResponse;
@@ -19,20 +13,17 @@ import ru.practicum.main.evente.dto.EventShortDto;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Positive;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping(path = "/events")
 @Slf4j
 public class PublicEventController {
     private final EventService eventService;
-    private final StatsClient statsClient;
-    private final ObjectMapper objectMapper;
 
     //Получение событий с возможностью фильтраций
-    //TODO Сделать логику
-    @GetMapping(path = "/events")
+    @GetMapping
     public List<EventShortDto> getEvents(@RequestParam(required = false) String text,
                                                                                @RequestParam (required = false)List<Long> categories,
                                                                                @RequestParam (required = false)Boolean paid,
@@ -56,24 +47,6 @@ public class PublicEventController {
         log.info("Public Контроллер метод getReceivingEventsWithThePossibilityOfFiltering проверка sort = {}", sort);
         log.info("Public Контроллер метод getReceivingEventsWithThePossibilityOfFiltering проверка from = {}", from);
         log.info("Public Контроллер метод getReceivingEventsWithThePossibilityOfFiltering проверка size = {}", size);
-        List<ResponseStatsDto> viwes = new ArrayList<>();
-        try {
-            RequestStatsDto requestStatsDto = RequestStatsDto.builder()
-                    .uri(request.getRequestURI())
-                    .ip(request.getRemoteAddr())
-                    .app("ewm-main-service")
-                    .timestamp(LocalDateTime.now())
-                    .build();
-            ResponseEntity<Object> stats = statsClient.creatRequestInformation(requestStatsDto);
-            log.info("информация статиcтики {}", stats);
-            ResponseEntity<Object> infStats = statsClient.getRequestInformation(LocalDateTime.of(2000,1,1,1,1,1),
-                    LocalDateTime.now(), List.of(request.getRequestURI()),true);
-            TypeReference<List<ResponseStatsDto>> referese = new TypeReference<>(){};
-            viwes = objectMapper.convertValue(infStats.getBody(),referese);
-            log.info("viwe = {}", viwes.get(0));
-        } catch (Exception e) {
-            throw new RuntimeException("Что то пошло не так в /events");
-        }
 
         List<EventShortDto> results = eventService.getEvents(PublicEventFilterRequest.builder()
                 .categories(categories)
@@ -84,34 +57,17 @@ public class PublicEventController {
                 .sort(sort)
                 .from(from)
                 .size(size)
-                .build());
+                .build(), request);
 
         return results;
     }
 
     //получение подробной информации об опубликованном событии по его id
-    @GetMapping(path = "/events/{id}")
+    @GetMapping(path = "/{id}")
     public EventDtoResponse getObtainingDetailedInformationAboutAPublishedEventByItsId(@PathVariable long id, HttpServletRequest request) {
         log.info("Public Контроллер метод getObtainingDetailedInformationAboutAPublishedEventByItsId проверка id = {}", id);
-        List<ResponseStatsDto> viwes = new ArrayList<>();
-        try {
-            RequestStatsDto requestStatsDto = RequestStatsDto.builder()
-                    .uri(request.getRequestURI())
-                    .ip(request.getRemoteAddr())
-                    .app("ewm-main-service")
-                    .timestamp(LocalDateTime.now())
-                    .build();
-            ResponseEntity<Object> stats = statsClient.creatRequestInformation(requestStatsDto);
-            log.info("информация статиcтики {}", stats);
-            ResponseEntity<Object> infStats = statsClient.getRequestInformation(LocalDateTime.of(2000,1,1,1,1,1),
-                    LocalDateTime.now(), List.of(request.getRequestURI()),true);
-            TypeReference<List<ResponseStatsDto>> referese = new TypeReference<>(){};
-            viwes = objectMapper.convertValue(infStats.getBody(),referese);
-            log.info("viwe = {}", viwes.get(0));
-        } catch (Exception e) {
-            throw new RuntimeException("Что то пошло не так в /events/{id}");
-        }
-        EventDtoResponse eventDtoResponse = eventService.getObtainingDetailedInformationAboutAPublishedEventByItsId(id,viwes);
+
+        EventDtoResponse eventDtoResponse = eventService.getObtainingDetailedInformationAboutAPublishedEventByItsId(id, request);
 
         return eventDtoResponse;
     }

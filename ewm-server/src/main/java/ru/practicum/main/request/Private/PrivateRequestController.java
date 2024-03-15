@@ -9,6 +9,7 @@ import ru.practicum.main.request.dto.RequestDto;
 import java.util.List;
 
 @RestController
+@RequestMapping(path = "/users/{userId}/requests")
 @Slf4j
 public class PrivateRequestController {
     private final RequestService requestService;
@@ -18,7 +19,7 @@ public class PrivateRequestController {
     }
 
     //добавление запроса от текущего пользователя на участие в событии
-    @PostMapping("/users/{userId}/requests")
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public RequestDto createRrequest(@PathVariable long userId, @RequestParam long eventId) {
         log.info("Контроллер метод createRrequest проверка userId = {}", userId);
@@ -27,7 +28,7 @@ public class PrivateRequestController {
     }
 
     //отмена своего запроса на участие в событии
-    @PatchMapping("/users/{userId}/requests/{requestId}/cancel")
+    @PatchMapping("/{requestId}/cancel")
     public RequestDto updateRrequest(@PathVariable long userId, @PathVariable long requestId) {
         log.info("Контроллер метод updateRrequest проверка userId = {}", userId);
         log.info("Контроллер метод updateRrequest проверка requestId = {}", requestId);
@@ -35,7 +36,7 @@ public class PrivateRequestController {
     }
 
     //Получение информации о заявках текущего пользователя на участие в чужих событиях
-    @GetMapping("/users/{userId}/requests")
+    @GetMapping
     public List<RequestDto> getObtainingInformationAboutTheCurrentUserRequestsToParticipateInOtherPeoplesEvents(@PathVariable long userId) {
         log.info("Контроллер метод getObtainingInformationAboutTheCurrentUserRequestsToParticipateInOtherPeoplesEvents проверка from = {}", userId);
         return requestService.getObtainingInformationAboutTheCurrentUserRequestsToParticipateInOtherPeoplesEvents(userId);

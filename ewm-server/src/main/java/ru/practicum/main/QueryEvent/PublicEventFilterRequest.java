@@ -14,17 +14,17 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 public class PublicEventFilterRequest {
-    String text;
-    List<Long> categories;
-    Boolean paid;
+    private String text;
+    private List<Long> categories;
+    private Boolean paid;
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    LocalDateTime rangeStart;
+    private LocalDateTime rangeStart;
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    LocalDateTime rangeEnd;
-    Boolean onlyAvailable;
-    SortType sort;
+    private LocalDateTime rangeEnd;
+    private Boolean onlyAvailable;
+    private SortType sort;
     @Positive
-    int from;
+    private int from;
     @Positive
-    int size;
+    private int size;
 }

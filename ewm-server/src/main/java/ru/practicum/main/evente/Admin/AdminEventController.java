@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
+@RequestMapping(path = "/admin/events")
 @Slf4j
 public class AdminEventController {
     private  final EventService eventService;
@@ -26,9 +27,8 @@ public class AdminEventController {
 
     //Поиск события
     //Эндпоинт возвращает полную информацию обо всех событиях подходящих под переданные условия
-    //
     //В случае, если по заданным фильтрам не найдено ни одного события, возвращает пустой список
-    @GetMapping(path = "/admin/events")
+    @GetMapping
     public List<EventDtoResponse> searchForAnEvent(@RequestParam(required = false) List<Long> users,
                                                    @RequestParam(required = false) List<StatusType> states,
                                                    @RequestParam(required = false) List<Long> categories,
@@ -64,7 +64,7 @@ public class AdminEventController {
     }
 
     //Редактирование данных события и его статуса (отклонение/публикация)
-    @PatchMapping("/admin/events/{eventId}")
+    @PatchMapping("/{eventId}")
     public EventDtoResponse updatingEventDataAndStatus(@Valid @RequestBody EventDtoRequestUpdateStateAction eventDtoRequestUpdateStateAction,
                                                        @PathVariable long eventId) {
         log.info("Admin Проверка контроллер метод updatingAnEventAddedByTheCurrentUser eventId {}", eventId);

@@ -12,6 +12,7 @@ import javax.validation.constraints.Positive;
 import java.util.List;
 
 @RestController
+@RequestMapping(path = "/users")
 @Slf4j
 public class PrivateEventController {
     private  final EventService eventService;
@@ -21,7 +22,7 @@ public class PrivateEventController {
     }
 
     //Добавление нового события
-    @PostMapping(path = "/users/{userId}/events")
+    @PostMapping(path = "/{userId}/events")
     @ResponseStatus(HttpStatus.CREATED)
     public EventDtoResponse createEvent(@Valid @RequestBody EventDtoRequest eventDtoRequest,
                                         @PathVariable long userId) {
@@ -33,7 +34,7 @@ public class PrivateEventController {
     }
 
     //Получение событий, добавленных текущим пользователем
-    @GetMapping(path = "/users/{userId}/events")
+    @GetMapping(path = "/{userId}/events")
     public List<EventShortDto> getReceivingEventsAddedByTheCurrentUser(@PathVariable long userId,
                                                                        @RequestParam(value = "from", defaultValue = "0") @Positive int from,
                                                                        @RequestParam(value = "size", defaultValue = "10") @Positive int size) {
@@ -44,7 +45,7 @@ public class PrivateEventController {
     }
 
     //Получение полной информации о событии добавленном текущим пользователем
-    @GetMapping(path = "/users/{userId}/events/{eventId}")
+    @GetMapping(path = "/{userId}/events/{eventId}")
     public EventDtoResponse getObtainingCompleteInformationAboutTheEventByTheAddedCurrentUser(@PathVariable long userId,
                                                                        @PathVariable long eventId) {
         log.info("Контроллер метод getObtainingCompleteInformationAboutTheEventByTheAddedCurrentUser проверка ids = {}", userId);
@@ -54,7 +55,7 @@ public class PrivateEventController {
     }
 
     //Изминение события добавленного текущим пользователем
-    @PatchMapping("/users/{userId}/events/{eventId}")
+    @PatchMapping("/{userId}/events/{eventId}")
     public EventDtoResponse updatingAnEventAddedByTheCurrentUser(@Valid @RequestBody EventDtoRequestUpdateStateAction eventDtoRequestUpdateStateAction,
                                                                  @PathVariable long userId,
                                                                  @PathVariable long eventId) {
@@ -65,7 +66,7 @@ public class PrivateEventController {
     }
 
     //Получение информации о запросах на участие в событии текущего пользователя
-    @GetMapping(path = "/users/{userId}/events/{eventId}/requests")
+    @GetMapping(path = "/{userId}/events/{eventId}/requests")
     public List<RequestDto> getObtainingInformationAboutRequestsToParticipateInAnEventOfTheCurrentUser(@PathVariable long userId,
                                                                                                        @PathVariable long eventId) {
         log.info("Контроллер метод getObtainingInformationAboutRequestsToParticipateInAnEventOfTheCurrentUser проверка userId = {}", userId);
@@ -74,7 +75,7 @@ public class PrivateEventController {
     }
 
     //Изминение статуса (подтверждена, отменена) заявок на участие в событии текущего пользователя
-    @PatchMapping(path = "/users/{userId}/events/{eventId}/requests")
+    @PatchMapping(path = "/{userId}/events/{eventId}/requests")
     public EventRequestStatusUpdateResult updateChangingTheStatusOfApplicationsForParticipationInAnEventForTheCurrentUser(@RequestBody EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest,
                                                                                                 @PathVariable long userId,
                                                                                                 @PathVariable long eventId) {

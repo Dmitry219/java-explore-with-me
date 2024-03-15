@@ -63,13 +63,7 @@ public class ErrorHandler {
                 .timestamp(LocalDateTime.now())
                 .build();
     }
-
     //--------------------Close User, Category--------------------------------
-
-    //---------------------Request--------------------------------------
-
-
-    //--------------------Close Request--------------------------------
 
     //---------------------Event--------------------------------------
     @ExceptionHandler(value = {NullPointerExceptionpEvent.class})
@@ -112,7 +106,6 @@ public class ErrorHandler {
     }
 
     //--------------------Close Event--------------------------------
-
 
     @ExceptionHandler()
     @ResponseStatus(HttpStatus.BAD_REQUEST)

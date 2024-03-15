@@ -14,15 +14,15 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 public class AdminEventFilterRequest {
-    List<Long> users;
-    List<StatusType> states;
-    List<Long> categories;
+    private List<Long> users;
+    private List<StatusType> states;
+    private List<Long> categories;
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    LocalDateTime rangeStart;
+    private LocalDateTime rangeStart;
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    LocalDateTime rangeEnd;
+    private LocalDateTime rangeEnd;
     @Positive
-    int from;
+    private int from;
     @Positive
-    int size;
+    private int size;
 }

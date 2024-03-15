@@ -4,7 +4,6 @@ import lombok.Builder;
 import lombok.Data;
 import ru.practicum.main.evente.StatusType;
 
-
 import java.util.List;
 
 @Data

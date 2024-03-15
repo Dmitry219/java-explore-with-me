@@ -1,9 +1,6 @@
 package ru.practicum.main.evente;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import ru.practicum.main.category.Category;
 import ru.practicum.main.evente.location.Location;
 import ru.practicum.main.users.User;
@@ -18,7 +15,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Event {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private String annotation;
+    @ToString.Exclude
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
@@ -29,12 +30,11 @@ public class Event {
     private String description;
     @Column(name = "event_Date")
     private LocalDateTime eventDate;
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @ToString.Exclude
     @ManyToOne
     @JoinColumn(name = "initiator_id", nullable = false)
     private User initiator;
+    @ToString.Exclude
     @Embedded
     @AttributeOverrides({
             @AttributeOverride(name = "lat", column = @Column(name = "loc_Lat")),

@@ -1,11 +1,11 @@
 package ru.practicum.main.evente;
 
-import ru.practicum.ResponseStatsDto;
 import ru.practicum.main.QueryEvent.AdminEventFilterRequest;
 import ru.practicum.main.QueryEvent.PublicEventFilterRequest;
 import ru.practicum.main.evente.dto.*;
 import ru.practicum.main.request.dto.RequestDto;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 public interface EventService {
@@ -18,11 +18,11 @@ public interface EventService {
     EventDtoResponse updatingAnEventAddedByTheCurrentUser(EventDtoRequestUpdateStateAction eventDtoRequestUpdateStateAction,
                                                           long userId, long eventId);
 
-    EventDtoResponse getObtainingDetailedInformationAboutAPublishedEventByItsId(long id, List<ResponseStatsDto> viwes);
+    EventDtoResponse getObtainingDetailedInformationAboutAPublishedEventByItsId(long id, HttpServletRequest request);
 
     List<EventDtoResponse> searchForAnEvent(AdminEventFilterRequest adminEventFilterRequest);
 
-    List<EventShortDto> getEvents(PublicEventFilterRequest publicEventFilterRequest);
+    List<EventShortDto> getEvents(PublicEventFilterRequest publicEventFilterRequest, HttpServletRequest request);
 
     EventDtoResponse updatingEventDataAndStatus(EventDtoRequestUpdateStateAction eventDtoRequestUpdateStateAction,long eventId);
 

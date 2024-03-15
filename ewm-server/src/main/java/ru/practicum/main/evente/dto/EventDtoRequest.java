@@ -11,7 +11,6 @@ import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDateTime;
 
 @Data
-//@Builder
 public class EventDtoRequest {
     @NotBlank(message = "annotation не должно быть пустым")
     @Length(min = 20, max = 2000)
@@ -25,9 +24,7 @@ public class EventDtoRequest {
     private Location location;
     private boolean paid;
     @PositiveOrZero
-    //@Builder.Default
     private long participantLimit = 0L;
-    //@Builder.Default
     private boolean requestModeration = true;
     @Length(min = 3, max = 120)
     private String title;

@@ -1,13 +1,17 @@
 package ru.practicum.main.evente;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import ru.practicum.RequestStatsDto;
 import ru.practicum.ResponseStatsDto;
 import ru.practicum.StatsClient;
 import ru.practicum.main.QueryEvent.AdminEventFilterRequest;
@@ -27,15 +31,14 @@ import ru.practicum.main.request.RequestRepository;
 import ru.practicum.main.request.dto.RequestDto;
 import ru.practicum.main.users.UserRepository;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 
 import java.util.List;
 
-
 import java.util.stream.Collectors;
-
 
 @Service
 @Transactional(readOnly = true)
@@ -46,13 +49,17 @@ public class EventServiceImpl implements EventService {
     private final UserRepository userRepository;
     private final RequestRepository requestRepository;
     private final StatsClient statsClient;
+    private final ObjectMapper objectMapper;
 
-    public EventServiceImpl(EventRepository eventRepository, CategoryRepository categoryRepository, UserRepository userRepository, RequestRepository requestRepository, StatsClient statsClient) {
+    public EventServiceImpl(EventRepository eventRepository, CategoryRepository categoryRepository,
+                            UserRepository userRepository, RequestRepository requestRepository,
+                            StatsClient statsClient, ObjectMapper objectMapper) {
         this.eventRepository = eventRepository;
         this.categoryRepository = categoryRepository;
         this.userRepository = userRepository;
         this.requestRepository = requestRepository;
         this.statsClient = statsClient;
+        this.objectMapper = objectMapper;
     }
 
     @Transactional
@@ -182,7 +189,27 @@ public class EventServiceImpl implements EventService {
 
     @Transactional
     @Override
-    public EventDtoResponse getObtainingDetailedInformationAboutAPublishedEventByItsId(long id, List<ResponseStatsDto> viwes) {
+    public EventDtoResponse getObtainingDetailedInformationAboutAPublishedEventByItsId(long id, HttpServletRequest request) {
+
+        List<ResponseStatsDto> viwes = new ArrayList<>();
+        try {
+            RequestStatsDto requestStatsDto = RequestStatsDto.builder()
+                    .uri(request.getRequestURI())
+                    .ip(request.getRemoteAddr())
+                    .app("ewm-main-service")
+                    .timestamp(LocalDateTime.now())
+                    .build();
+            ResponseEntity<Object> stats = statsClient.creatRequestInformation(requestStatsDto);
+            log.info("информация статиcтики {}", stats);
+            ResponseEntity<Object> infStats = statsClient.getRequestInformation(LocalDateTime.of(2000,1,1,1,1,1),
+                    LocalDateTime.now(), List.of(request.getRequestURI()),true);
+            TypeReference<List<ResponseStatsDto>> referese = new TypeReference<>(){};
+            viwes = objectMapper.convertValue(infStats.getBody(),referese);
+            log.info("viwe = {}", viwes.get(0));
+        } catch (Exception e) {
+            throw new RuntimeException("Что то пошло не так в /events/{id}");
+        }
+
         log.info("Public сервис метод getObtainingDetailedInformationAboutAPublishedEventByItsId проверка id = {}", id);
         Event event = eventRepository.findById(id).get();
         event.setViews(viwes.get(0).getHits());//положили количество просмотров
@@ -190,7 +217,7 @@ public class EventServiceImpl implements EventService {
         if (!event.getState().equals(String.valueOf(StatusType.PUBLISHED))) {
             throw new NotFoundExceptionUser(String.format("Событие не опубликовано!"));
         }
-        //TODO В событие должно быть: количество просмотров, количество подтвержденных запросов и сохранить в сервис статистики
+
         log.info("Public сервис метод getObtainingDetailedInformationAboutAPublishedEventByItsId проверка получение из базы event = {}", event);
 
         return EventMapping.toEventDtoResponse(event);
@@ -218,7 +245,6 @@ public class EventServiceImpl implements EventService {
                 .collect(Collectors.toList());
     }
 
-    //TODO Тесты не проходят
     @Override
     public List<EventDtoResponse> searchForAnEvent(AdminEventFilterRequest adminEventFilterRequest) {
         List<Event> events = new ArrayList<>();
@@ -279,7 +305,27 @@ public class EventServiceImpl implements EventService {
 //    4 информация о каждом событии должна включать в себя количество просмотров и количество уже одобренных заявок на участие
 //    5 информацию о том, что по этому эндпоинту был осуществлен и обработан запрос, нужно сохранить в сервисе статистики*/
     @Override
-    public List<EventShortDto> getEvents(PublicEventFilterRequest publicEventFilterRequest) {
+    public List<EventShortDto> getEvents(PublicEventFilterRequest publicEventFilterRequest, HttpServletRequest request) {
+
+        List<ResponseStatsDto> viwes = new ArrayList<>();
+        try {
+            RequestStatsDto requestStatsDto = RequestStatsDto.builder()
+                    .uri(request.getRequestURI())
+                    .ip(request.getRemoteAddr())
+                    .app("ewm-main-service")
+                    .timestamp(LocalDateTime.now())
+                    .build();
+            ResponseEntity<Object> stats = statsClient.creatRequestInformation(requestStatsDto);
+            log.info("информация статиcтики {}", stats);
+            ResponseEntity<Object> infStats = statsClient.getRequestInformation(LocalDateTime.of(2000,1,1,1,1,1),
+                    LocalDateTime.now(), List.of(request.getRequestURI()),true);
+            TypeReference<List<ResponseStatsDto>> referese = new TypeReference<>(){};
+            viwes = objectMapper.convertValue(infStats.getBody(),referese);
+            log.info("viwe = {}", viwes.get(0));
+        } catch (Exception e) {
+            throw new RuntimeException("Что то пошло не так в /events");
+        }
+
         List<Event> events = new ArrayList<>();
         QEvent qEvent = QEvent.event;
         List<BooleanExpression> predicates = new ArrayList<>();
@@ -333,18 +379,6 @@ public class EventServiceImpl implements EventService {
                 .collect(Collectors.toList());
     }
 
-//    private Map<Long, Long> getEventViews(Collection<Event> events){
-//        Map<String, Long> eventUriAndIdMap = events.stream()
-//                .map(Event::getId)
-//                .collect(Collectors.toMap(id -> "/events/" + id, Function.identity()));
-//
-//        List<ViewStats> stats = statsClient.getStats();
-//        return stats.stream()
-//                .collect(Collectors.toMap(
-//                        stats ->eventUriAndIdMap.get(stats.getUri()),ViewStats::getHits
-//                ));
-//    }
-
     private void validateTime(LocalDateTime start, LocalDateTime end) {
         if (start != null && end != null && start.isAfter(end)) {
             throw new IllegalArgumentException("Старт после конца!");
@@ -359,8 +393,6 @@ public class EventServiceImpl implements EventService {
 
         Event eventUpdate = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundExceptionConflict(String.format("Event with id=2 was not found", eventId)));
-
-
 
         checkEventDateAndNow(eventUpdate); //проверка что события находится на час после начала
 

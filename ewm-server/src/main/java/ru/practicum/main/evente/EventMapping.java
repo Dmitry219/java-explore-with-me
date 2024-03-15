@@ -56,9 +56,4 @@ public class EventMapping {
                 .confirmedRequests(event.getConfirmedRequests())
                 .build();
     }
-
-    public Event toEventUpdateStateAction(EventDtoRequestUpdateStateAction eventDtoRequestUpdateStateAction) {
-        return Event.builder()
-                .build();
-    }
 }

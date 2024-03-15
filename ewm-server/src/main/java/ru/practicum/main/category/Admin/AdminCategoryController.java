@@ -10,6 +10,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 
 @RestController
+@RequestMapping(path = "/admin/categories")
 @Slf4j
 public class AdminCategoryController {
     private final CategoryService categoryService;
@@ -19,7 +20,7 @@ public class AdminCategoryController {
     }
 
     //Добавление новой категории
-    @PostMapping("/admin/categories")
+    @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
     public CategoryDto createCategory(@Valid @RequestBody CategoryDto categoryDto) {
         log.info("Контроллер метод createCreate проверка categoryDto = {}", categoryDto);
@@ -27,7 +28,7 @@ public class AdminCategoryController {
     }
 
     //Изминение категории
-    @PatchMapping("/admin/categories/{catId}")
+    @PatchMapping("/{catId}")
     public CategoryDto updateCategory(@Valid @RequestBody CategoryDto categoryDto,
                                       @PathVariable @Positive long catId) {
         log.info("Контроллер метод updateCategory проверка categoryDto = {}", categoryDto);
@@ -36,7 +37,7 @@ public class AdminCategoryController {
     }
 
     //Удаление категории
-    @DeleteMapping("/admin/categories/{catId}")
+    @DeleteMapping("/{catId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCategory(@PathVariable long catId) {
         log.info("Контроллер метод deleteCategory проверка catId = {}", catId);

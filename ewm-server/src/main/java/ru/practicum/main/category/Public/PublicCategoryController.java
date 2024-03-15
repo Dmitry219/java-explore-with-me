@@ -9,6 +9,7 @@ import javax.validation.constraints.Positive;
 import java.util.List;
 
 @RestController
+@RequestMapping(path = "categories")
 @Slf4j
 public class PublicCategoryController {
     private final CategoryService categoryService;
@@ -18,7 +19,7 @@ public class PublicCategoryController {
     }
 
     //Получение категории
-    @GetMapping("categories")
+    @GetMapping
     public List<CategoryDto> getCategory(@RequestParam(value = "from", defaultValue = "0") @Positive int from,
                                      @RequestParam(value = "size", defaultValue = "10") @Positive int size) {
         log.info("Контроллер метод getCategory проверка from = {}", from);
@@ -27,7 +28,7 @@ public class PublicCategoryController {
     }
 
     //Получение информации о категории по её id
-    @GetMapping("categories/{catId}")
+    @GetMapping("/{catId}")
     public CategoryDto getByIdCategory(@PathVariable long catId) {
         log.info("Контроллер метод getByIdCategory проверка catId = {}", catId);
         return categoryService.getByIdCategory(catId);
