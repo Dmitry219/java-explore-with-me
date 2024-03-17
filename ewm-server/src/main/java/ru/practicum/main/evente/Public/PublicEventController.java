@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.main.QueryEvent.PublicEventFilterRequest;
+import ru.practicum.main.comments.CommentDtoShort;
 import ru.practicum.main.evente.EventService;
 import ru.practicum.main.evente.dto.EventDtoResponse;
 import ru.practicum.main.evente.dto.EventShortDto;
@@ -70,5 +71,16 @@ public class PublicEventController {
         EventDtoResponse eventDtoResponse = eventService.getObtainingDetailedInformationAboutAPublishedEventByItsId(id, request);
 
         return eventDtoResponse;
+    }
+
+    @GetMapping("/comment/{commitId}")
+    public CommentDtoShort getBuIdComment(@PathVariable long commitId) {
+        log.info("Public Контроллер метод getBuIdComment проверка eventId = {}", commitId);
+        return eventService.getByIdComment(commitId);
+    }
+
+    @GetMapping("/comment")
+    public List<CommentDtoShort> getBuIdComment() {
+        return eventService.getAllComments();
     }
 }

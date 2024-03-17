@@ -23,4 +23,6 @@ public interface EventRepository extends JpaRepository<Event, Long>,
     //поиск события по id категории
     List<Event> findAllByCategoryId(Long catId);
 
+    Event findByIdAndState(long eventId, String state);
+
 }

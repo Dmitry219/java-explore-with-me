@@ -2,8 +2,10 @@ package ru.practicum.main.evente.Admin;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.main.QueryEvent.AdminEventFilterRequest;
+import ru.practicum.main.comments.CommentDtoShort;
 import ru.practicum.main.evente.EventService;
 import ru.practicum.main.evente.StatusType;
 import ru.practicum.main.evente.dto.EventDtoRequestUpdateStateAction;
@@ -16,7 +18,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping(path = "/admin/events")
+@RequestMapping(path = "/admin")
 @Slf4j
 public class AdminEventController {
     private  final EventService eventService;
@@ -28,7 +30,7 @@ public class AdminEventController {
     //Поиск события
     //Эндпоинт возвращает полную информацию обо всех событиях подходящих под переданные условия
     //В случае, если по заданным фильтрам не найдено ни одного события, возвращает пустой список
-    @GetMapping
+    @GetMapping("/events")
     public List<EventDtoResponse> searchForAnEvent(@RequestParam(required = false) List<Long> users,
                                                    @RequestParam(required = false) List<StatusType> states,
                                                    @RequestParam(required = false) List<Long> categories,
@@ -64,11 +66,39 @@ public class AdminEventController {
     }
 
     //Редактирование данных события и его статуса (отклонение/публикация)
-    @PatchMapping("/{eventId}")
+    @PatchMapping("/events/{eventId}")
     public EventDtoResponse updatingEventDataAndStatus(@Valid @RequestBody EventDtoRequestUpdateStateAction eventDtoRequestUpdateStateAction,
                                                        @PathVariable long eventId) {
         log.info("Admin Проверка контроллер метод updatingAnEventAddedByTheCurrentUser eventId {}", eventId);
         return eventService.updatingEventDataAndStatus(eventDtoRequestUpdateStateAction,eventId);
+    }
+
+    //-----Комментарий-----
+    @DeleteMapping("/comment/{commitId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateComment(@PathVariable long commitId) {
+        log.info("Public Контроллер метод updateComment проверка eventId = {}", commitId);
+        eventService.deleteCommentById(commitId);
+    }
+
+    @GetMapping("/comment/{commitId}")
+    public CommentDtoShort getBuIdComment(@PathVariable long commitId) {
+        log.info("Public Контроллер метод getBuIdComment проверка eventId = {}", commitId);
+        return eventService.getByIdComment(commitId);
+    }
+
+    //всех коменнтарии одного пользовталея
+    @GetMapping("/comment")
+    public List<CommentDtoShort> getAllByComment(@RequestHeader(value = "User-Id") long userId) {
+        log.info("Public Контроллер метод getBuIdComment проверка userId = {}", userId);
+        return eventService.getAllByComment(userId);
+    }
+
+    //вывести комментарии с бранными словами
+    @GetMapping("/comment/searche")
+    public List<CommentDtoShort> getAllBySearcheComment(@RequestParam(required = false) String text) {
+        log.info("Public Контроллер метод getBuIdComment проверка text = {}", text);
+        return eventService.getAllBySearcheComment(text);
     }
 
 }

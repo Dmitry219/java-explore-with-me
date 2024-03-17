@@ -18,6 +18,7 @@ import ru.practicum.main.QueryEvent.AdminEventFilterRequest;
 import ru.practicum.main.QueryEvent.PublicEventFilterRequest;
 import ru.practicum.main.category.CategoryRepository;
 
+import ru.practicum.main.comments.*;
 import ru.practicum.main.evente.dto.*;
 import ru.practicum.main.evente.dto.EventRequestStatusUpdateResult;
 import ru.practicum.main.exception.Event.AuthorizationFailureExceptionEvent;
@@ -25,10 +26,12 @@ import ru.practicum.main.exception.Event.NotFoundExceptionConflictEvent;
 import ru.practicum.main.exception.NotFoundExceptionConflict;
 import ru.practicum.main.exception.User.NotFoundExceptionUser;
 import ru.practicum.main.exception.User.NullPointerExceptionpUser;
+import ru.practicum.main.exception.ValidationUserException;
 import ru.practicum.main.request.Request;
 import ru.practicum.main.request.RequestMapper;
 import ru.practicum.main.request.RequestRepository;
 import ru.practicum.main.request.dto.RequestDto;
+import ru.practicum.main.users.User;
 import ru.practicum.main.users.UserRepository;
 
 import javax.servlet.http.HttpServletRequest;
@@ -48,16 +51,18 @@ public class EventServiceImpl implements EventService {
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
     private final RequestRepository requestRepository;
+    private final CommentRepository commentRepository;
     private final StatsClient statsClient;
     private final ObjectMapper objectMapper;
 
     public EventServiceImpl(EventRepository eventRepository, CategoryRepository categoryRepository,
-                            UserRepository userRepository, RequestRepository requestRepository,
+                            UserRepository userRepository, RequestRepository requestRepository, CommentRepository commentRepository,
                             StatsClient statsClient, ObjectMapper objectMapper) {
         this.eventRepository = eventRepository;
         this.categoryRepository = categoryRepository;
         this.userRepository = userRepository;
         this.requestRepository = requestRepository;
+        this.commentRepository = commentRepository;
         this.statsClient = statsClient;
         this.objectMapper = objectMapper;
     }
@@ -82,7 +87,7 @@ public class EventServiceImpl implements EventService {
 
         checkTime(saveEvent, eventDtoRequest.getEventDate());
 
-        EventDtoResponse eventDtoResponse = EventMapping.toEventDtoResponse(saveEvent);
+        EventDtoResponse eventDtoResponse = EventMapping.toEventDtoResponse(saveEvent, new ArrayList<>());
         log.info("Сервис createEvent проверка маппинга eventDtoResponse = {}", eventDtoResponse);
 
         return eventDtoResponse;
@@ -114,7 +119,17 @@ public class EventServiceImpl implements EventService {
         checkOwnerEvent(userId, eventId);
         Event event = eventRepository.findByInitiatorIdAndId(userId, eventId);
         log.info("Сервис getObtainingCompleteInformationAboutTheEventByTheAddedCurrentUser проверка event = {}", event);
-        return EventMapping.toEventDtoResponse(event);
+
+        List<Comment> comments = new ArrayList<>();
+        List<CommentDtoShort> commentDtos = new ArrayList<>();
+        comments = commentRepository.findAllByEventId(event.getId());
+        if(comments != null){
+            commentDtos = comments.stream()
+                    .map(CommentMapping::toCommentDtoShort)
+                    .collect(Collectors.toList());
+        }
+
+        return EventMapping.toEventDtoResponse(event, commentDtos);
     }
 
     @Transactional
@@ -184,7 +199,16 @@ public class EventServiceImpl implements EventService {
 
         Event updateEventSave = eventRepository.save(eventUpdate);
 
-        return EventMapping.toEventDtoResponse(updateEventSave);
+        List<Comment> comments = new ArrayList<>();
+        List<CommentDtoShort> commentDtos = new ArrayList<>();
+        comments = commentRepository.findAllByEventId(eventUpdate.getId());
+        if(comments != null){
+            commentDtos = comments.stream()
+                    .map(CommentMapping::toCommentDtoShort)
+                    .collect(Collectors.toList());
+        }
+
+        return EventMapping.toEventDtoResponse(updateEventSave, commentDtos);
     }
 
     @Transactional
@@ -220,7 +244,17 @@ public class EventServiceImpl implements EventService {
 
         log.info("Public сервис метод getObtainingDetailedInformationAboutAPublishedEventByItsId проверка получение из базы event = {}", event);
 
-        return EventMapping.toEventDtoResponse(event);
+        List<Comment> comments = new ArrayList<>();
+        List<CommentDtoShort> commentDtos = new ArrayList<>();
+        comments = commentRepository.findAllByEventId(id);
+
+        if(comments != null){
+            commentDtos = comments.stream()
+                    .map(CommentMapping::toCommentDtoShort)
+                    .collect(Collectors.toList());
+        }
+
+        return EventMapping.toEventDtoResponse(event, commentDtos);
     }
 
     @Override
@@ -295,7 +329,11 @@ public class EventServiceImpl implements EventService {
         log.info("Admin сервис проверка events {}", events);
 
         return events.stream()
-                .map(EventMapping::toEventDtoResponse)
+                .map(event ->
+                        EventMapping.toEventDtoResponse(event, commentRepository.findAllByEventId(event.getId())
+                                .stream()
+                                .map(CommentMapping::toCommentDtoShort)
+                                .collect(Collectors.toList())))
                 .collect(Collectors.toList());
     }
 
@@ -446,7 +484,18 @@ public class EventServiceImpl implements EventService {
 
         log.info("Вот что получилсоь eventUpdate = {}", eventUpdate);
 
-        return EventMapping.toEventDtoResponse(eventRepository.save(eventUpdate));
+        List<Comment> comments = new ArrayList<>();
+        List<CommentDtoShort> commentDtos = new ArrayList<>();
+
+        comments = commentRepository.findAllByEventId(eventUpdate.getId());
+
+        if(comments != null){
+            commentDtos = comments.stream()
+                    .map(CommentMapping::toCommentDtoShort)
+                    .collect(Collectors.toList());
+        }
+
+        return EventMapping.toEventDtoResponse(eventRepository.save(eventUpdate), commentDtos);
     }
 
     @Transactional
@@ -529,6 +578,117 @@ public class EventServiceImpl implements EventService {
         return new EventRequestStatusUpdateResult(updateConfirmed, updateRejected);
 
     }
+
+    //---------------------------------Работа с комментированием------
+    @Transactional
+    @Override
+    public CommentDto createComment(CommentDto commentDto, long userId, long eventId) {
+        log.info("Проверка сервис метод createComment проверка commentDto={} , userId={} , eventId={} - ", commentDto, userId, eventId);
+        checkUser(userId);
+        checkEvent(eventId);
+        checkInitiatorId(userId);
+
+        User user = userRepository.findById(userId).get();
+        Event event = eventRepository.findByIdAndState(eventId, String.valueOf(StatusType.PUBLISHED));
+
+        if(event.getInitiator().getId() == userId){
+            throw new RuntimeException("Создатель не может оставлять комментарии!");
+        }
+
+        log.info("Проверка сервис метод createComment проверка event={}", event);
+
+        Comment comment = null;
+        CommentDto commentDtoNew = null;
+
+        if (event != null) {
+            comment = CommentMapping.toComment(commentDto, event, user);
+            commentDtoNew = CommentMapping.toCommentDto(commentRepository.save(comment));
+        } else {
+            throw new ValidationUserException("В базе отсутствует событие!");
+        }
+
+        return commentDtoNew;
+    }
+
+    @Transactional
+    @Override
+    public CommentDto updateComment(CommentDto commentDto, long userId, long commitId) {
+        log.info("Проверка сервис метод updateComment проверка commentDto={} , userId={} , commitId={} - ",
+                commentDto, userId, commitId);
+        checkUser(userId);
+
+        User user = userRepository.findById(userId).get();
+        Comment comment = commentRepository.findById(commitId).get();
+        Event event = eventRepository.findById(comment.getEvent().getId()).get();
+
+        if(comment.getAuthor() != user){
+            throw new RuntimeException("Пользователь не создатель коммента, только владелец может изменить комментарий !");
+        }
+        if(!event.getState().equals(String.valueOf(StatusType.PUBLISHED))){
+            throw new NotFoundExceptionConflict("Событие не опубликовано и его комментарии нельзя изменить !");
+        }
+
+        if(commentDto.getText() != null){
+            comment.setText(commentDto.getText());
+        }
+
+        CommentDto commentDtoNew = null;
+        commentDtoNew = CommentMapping.toCommentDto(commentRepository.save(comment));
+
+        return commentDtoNew;
+    }
+
+    @Transactional
+    @Override
+    public void deleteCommentById(long commitId){
+        if(!commentRepository.existsById(commitId)){
+            throw new NotFoundExceptionConflict("Не существует комментарий!");
+        }
+        commentRepository.deleteById(commitId);
+    }
+
+    @Override
+    public CommentDtoShort getByIdComment(long commitId){
+        log.info("Проверка сервис метод getBuIdComment проверка commitId={} ", commitId);
+        if(!commentRepository.existsById(commitId)){
+            throw new NotFoundExceptionConflict("Не существует комментарий!");
+        }
+
+        Comment comment = commentRepository.findById(commitId).get();
+        log.info("Проверка сервис метод getBuIdComment проверка comment={}",
+                comment);
+        return CommentMapping.toCommentDtoShort(comment);
+    }
+
+    @Override
+    public List<CommentDtoShort> getAllByComment(long userId){
+        log.info("Проверка сервис метод getBuIdComment проверка userId={}", userId);
+
+        checkUser(userId);
+        List<Comment> comments = commentRepository.findAllByAuthorId(userId);
+        if(comments != null){
+            return comments.stream().map(CommentMapping::toCommentDtoShort).collect(Collectors.toList());
+        }
+        return new ArrayList<>();
+    }
+
+    public List<CommentDtoShort> getAllBySearcheComment(String text){
+        List<Comment> comments = new ArrayList<>();
+        List<CommentDtoShort> commentDtos = new ArrayList<>();
+        if(text != null){
+            //comments = commentRepository.findAllByTextContaining(text);
+            comments = commentRepository.findAllByText(text.toLowerCase());
+            return comments.stream().map(CommentMapping::toCommentDtoShort).collect(Collectors.toList());
+        } else {
+            return commentDtos;
+        }
+    }
+
+    public List<CommentDtoShort> getAllComments(){
+        return commentRepository.findAll().stream().map(CommentMapping::toCommentDtoShort).collect(Collectors.toList());
+    }
+
+    //--------------------------------------------------------------
 
     private void checkTime(Event event, LocalDateTime eventDate) {
         log.info("Проверка сервис метод checkTime проверка eventDate должно быть впереди текущего");

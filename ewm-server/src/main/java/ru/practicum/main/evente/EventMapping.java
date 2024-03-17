@@ -2,10 +2,13 @@ package ru.practicum.main.evente;
 
 import lombok.experimental.UtilityClass;
 import ru.practicum.main.category.CategoryMapper;
+import ru.practicum.main.comments.CommentDtoShort;
 import ru.practicum.main.evente.dto.EventDtoRequest;
 import ru.practicum.main.evente.dto.EventDtoResponse;
 import ru.practicum.main.evente.dto.EventShortDto;
 import ru.practicum.main.users.UserMapper;
+
+import java.util.List;
 
 @UtilityClass
 public class EventMapping {
@@ -22,7 +25,7 @@ public class EventMapping {
                 .build();
     }
 
-    public EventDtoResponse toEventDtoResponse(Event event) {
+    public EventDtoResponse toEventDtoResponse(Event event, List<CommentDtoShort> coments) {
         return EventDtoResponse.builder()
                 .id(event.getId())
                 .annotation(event.getAnnotation())
@@ -40,6 +43,7 @@ public class EventMapping {
                 .publishedOn(event.getPublishedOn())
                 .confirmedRequests(event.getConfirmedRequests())
                 .views(event.getViews())
+                .comments(coments)
                 .build();
     }
 

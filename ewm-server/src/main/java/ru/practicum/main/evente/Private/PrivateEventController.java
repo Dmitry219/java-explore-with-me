@@ -3,6 +3,8 @@ package ru.practicum.main.evente.Private;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.main.comments.CommentDto;
+import ru.practicum.main.comments.CommentDtoShort;
 import ru.practicum.main.evente.EventService;
 import ru.practicum.main.evente.dto.*;
 import ru.practicum.main.request.dto.RequestDto;
@@ -84,5 +86,49 @@ public class PrivateEventController {
         log.info("Контроллер метод updateChangingTheStatusOfApplicationsForParticipationInAnEventForTheCurrentUser проверка eventId = {}", eventId);
 
         return eventService.updateChangingTheStatusOfApplicationsForParticipationInAnEventForTheCurrentUser(eventRequestStatusUpdateRequest, userId, eventId);
+    }
+
+    //------Комментарии-------------------------------------
+    @PostMapping("/{userId}/events/{eventId}/comment")
+    @ResponseStatus(HttpStatus.CREATED)
+    public CommentDto createComment(@PathVariable long eventId,
+                                    @PathVariable long userId,
+                                    @Valid @RequestBody CommentDto commentDto) {
+        log.info("Public Контроллер метод createComment проверка eventId = {}", eventId);
+        log.info("Public Контроллер метод createComment проверка userId = {}", userId);
+        log.info("Public Контроллер метод createComment проверка commentDto = {}", commentDto);
+
+        return eventService.createComment(commentDto, userId, eventId);
+    }
+
+    @PatchMapping("/{userId}/comment/{commitId}")
+    public CommentDto updateComment(@PathVariable long commitId,
+                                    @PathVariable long userId, //владелец комента
+                                    @Valid @RequestBody CommentDto commentDto) {
+        log.info("Public Контроллер метод createComment проверка commitId = {}", commitId);
+        log.info("Public Контроллер метод createComment проверка userId = {}", userId);
+        log.info("Public Контроллер метод createComment проверка commentDto = {}", commentDto);
+
+        return eventService.updateComment(commentDto,userId,commitId);
+    }
+
+    @DeleteMapping("/comment/{commitId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteComment(@PathVariable long commitId) {
+        log.info("Public Контроллер метод createComment проверка commitId = {}", commitId);
+        eventService.deleteCommentById(commitId);
+    }
+
+    @GetMapping("/comment/{commitId}")
+    public CommentDtoShort getByIdComment(@PathVariable long commitId) {
+        log.info("Public Контроллер метод getBuIdComment проверка eventId = {}", commitId);
+        return eventService.getByIdComment(commitId);
+    }
+
+    //вывод всех комннтарии или всех коменнтарtd одного пользовталея
+    @GetMapping("/{userId}/comment")
+    public List<CommentDtoShort> getAllByComment(@PathVariable long userId) {
+        log.info("Public Контроллер метод getBuIdComment проверка userId = {}", userId);
+        return eventService.getAllByComment(userId);
     }
 }

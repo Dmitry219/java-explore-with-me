@@ -4,11 +4,13 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Data;
 import ru.practicum.main.category.dto.CategoryDto;
+import ru.practicum.main.comments.CommentDtoShort;
 import ru.practicum.main.evente.StatusType;
 import ru.practicum.main.evente.location.Location;
 import ru.practicum.main.users.dto.UserShortDto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -31,4 +33,5 @@ public class EventDtoResponse {
     private StatusType state;
     private String title;
     private long views;
+    private List<CommentDtoShort> comments;
 }
