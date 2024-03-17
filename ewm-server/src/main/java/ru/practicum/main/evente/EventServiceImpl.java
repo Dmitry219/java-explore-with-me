@@ -123,7 +123,7 @@ public class EventServiceImpl implements EventService {
         List<Comment> comments = new ArrayList<>();
         List<CommentDtoShort> commentDtos = new ArrayList<>();
         comments = commentRepository.findAllByEventId(event.getId());
-        if(comments != null){
+        if (comments != null) {
             commentDtos = comments.stream()
                     .map(CommentMapping::toCommentDtoShort)
                     .collect(Collectors.toList());
@@ -202,7 +202,7 @@ public class EventServiceImpl implements EventService {
         List<Comment> comments = new ArrayList<>();
         List<CommentDtoShort> commentDtos = new ArrayList<>();
         comments = commentRepository.findAllByEventId(eventUpdate.getId());
-        if(comments != null){
+        if (comments != null) {
             commentDtos = comments.stream()
                     .map(CommentMapping::toCommentDtoShort)
                     .collect(Collectors.toList());
@@ -248,7 +248,7 @@ public class EventServiceImpl implements EventService {
         List<CommentDtoShort> commentDtos = new ArrayList<>();
         comments = commentRepository.findAllByEventId(id);
 
-        if(comments != null){
+        if (comments != null) {
             commentDtos = comments.stream()
                     .map(CommentMapping::toCommentDtoShort)
                     .collect(Collectors.toList());
@@ -489,7 +489,7 @@ public class EventServiceImpl implements EventService {
 
         comments = commentRepository.findAllByEventId(eventUpdate.getId());
 
-        if(comments != null){
+        if (comments != null) {
             commentDtos = comments.stream()
                     .map(CommentMapping::toCommentDtoShort)
                     .collect(Collectors.toList());
@@ -591,7 +591,7 @@ public class EventServiceImpl implements EventService {
         User user = userRepository.findById(userId).get();
         Event event = eventRepository.findByIdAndState(eventId, String.valueOf(StatusType.PUBLISHED));
 
-        if(event.getInitiator().getId() == userId){
+        if (event.getInitiator().getId() == userId) {
             throw new RuntimeException("Создатель не может оставлять комментарии!");
         }
 
@@ -621,14 +621,14 @@ public class EventServiceImpl implements EventService {
         Comment comment = commentRepository.findById(commitId).get();
         Event event = eventRepository.findById(comment.getEvent().getId()).get();
 
-        if(comment.getAuthor() != user){
+        if (comment.getAuthor() != user) {
             throw new RuntimeException("Пользователь не создатель коммента, только владелец может изменить комментарий !");
         }
-        if(!event.getState().equals(String.valueOf(StatusType.PUBLISHED))){
+        if (!event.getState().equals(String.valueOf(StatusType.PUBLISHED))) {
             throw new NotFoundExceptionConflict("Событие не опубликовано и его комментарии нельзя изменить !");
         }
 
-        if(commentDto.getText() != null){
+        if (commentDto.getText() != null) {
             comment.setText(commentDto.getText());
         }
 
@@ -640,17 +640,17 @@ public class EventServiceImpl implements EventService {
 
     @Transactional
     @Override
-    public void deleteCommentById(long commitId){
-        if(!commentRepository.existsById(commitId)){
+    public void deleteCommentById(long commitId) {
+        if (!commentRepository.existsById(commitId)) {
             throw new NotFoundExceptionConflict("Не существует комментарий!");
         }
         commentRepository.deleteById(commitId);
     }
 
     @Override
-    public CommentDtoShort getByIdComment(long commitId){
+    public CommentDtoShort getByIdComment(long commitId) {
         log.info("Проверка сервис метод getBuIdComment проверка commitId={} ", commitId);
-        if(!commentRepository.existsById(commitId)){
+        if (!commentRepository.existsById(commitId)) {
             throw new NotFoundExceptionConflict("Не существует комментарий!");
         }
 
@@ -661,21 +661,21 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public List<CommentDtoShort> getAllByComment(long userId){
+    public List<CommentDtoShort> getAllByComment(long userId) {
         log.info("Проверка сервис метод getBuIdComment проверка userId={}", userId);
 
         checkUser(userId);
         List<Comment> comments = commentRepository.findAllByAuthorId(userId);
-        if(comments != null){
+        if (comments != null) {
             return comments.stream().map(CommentMapping::toCommentDtoShort).collect(Collectors.toList());
         }
         return new ArrayList<>();
     }
 
-    public List<CommentDtoShort> getAllBySearcheComment(String text){
+    public List<CommentDtoShort> getAllBySearcheComment(String text) {
         List<Comment> comments = new ArrayList<>();
         List<CommentDtoShort> commentDtos = new ArrayList<>();
-        if(text != null){
+        if (text != null) {
             //comments = commentRepository.findAllByTextContaining(text);
             comments = commentRepository.findAllByText(text.toLowerCase());
             return comments.stream().map(CommentMapping::toCommentDtoShort).collect(Collectors.toList());
@@ -684,8 +684,10 @@ public class EventServiceImpl implements EventService {
         }
     }
 
-    public List<CommentDtoShort> getAllComments(){
-        return commentRepository.findAll().stream().map(CommentMapping::toCommentDtoShort).collect(Collectors.toList());
+    public List<CommentDtoShort> getAllComments() {
+        return commentRepository.findAll().stream()
+                .map(CommentMapping::toCommentDtoShort)
+                .collect(Collectors.toList());
     }
 
     //--------------------------------------------------------------
