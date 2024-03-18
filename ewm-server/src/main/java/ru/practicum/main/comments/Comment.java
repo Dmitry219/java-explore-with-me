@@ -1,9 +1,6 @@
 package ru.practicum.main.comments;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import ru.practicum.main.evente.Event;
 import ru.practicum.main.users.User;
 
@@ -22,9 +19,11 @@ public class Comment {
     private Long id;
     @Column(name = "text")
     private String text;
+    @ToString.Exclude
     @ManyToOne
     @JoinColumn(name = "event_id", nullable = false)
     private Event event;
+    @ToString.Exclude
     @ManyToOne
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
